@@ -1,14 +1,14 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_top">
   <title>Issue Items</title>
-  <link rel="stylesheet" href="css/style.css">
+  <!-- Include your CSS and any other resources here -->
 </head>
 <body>
   <div class="container">
-    <button class="return-btn" onclick="location.href='return.html'">Go to Return Page</button>
+    <button class="return-btn" onclick="window.location.href='return.html'">Go to Return Page</button>
     <h2>Issue Items</h2>
     
     <!-- Form Fields -->
@@ -23,7 +23,7 @@
     <div class="form-group">
       <label for="quantity">Quantity:</label>
       <input type="number" id="quantity" placeholder="Enter quantity" required>
-      <button type="button" class="add-another-btn" onclick="addAnother()">Add Another</button>
+      <!-- Implement addAnother() function if needed -->
     </div>
     <div class="form-group">
       <label for="studentName">Student Name:</label>
@@ -42,15 +42,11 @@
     </div>
   </div>
 
-  <div class="popup" id="popup">
-    <div id="itemsList"></div>
-    <button class="ok-button" id="okBtn">Ok</button>
-    <div class="error-message" id="error-message"></div>
-  </div>
+  <!-- Include any additional HTML elements -->
 
   <script>
-    // When SKU No. is entered, fetch SKU Name from Inventory Apps Script
-    document.getElementById("skuNo").addEventListener("change", async function() {
+    // Fetch SKU Name when SKU No. is entered
+    document.getElementById("skuNo").addEventListener("change", function() {
       const skuNo = this.value;
 
       if (!skuNo) {
@@ -58,35 +54,18 @@
         return;
       }
 
-      try {
-        // Replace 'INVENTORY_WEB_APP_URL' with your Inventory Web App URL
-        const response = await fetch('https://script.google.com/macros/s/AKfycbx-wpK-D9id1ljins3tdC1KqeN67kgjMPmZj09C9ipAugE5NmG-2XDyuq9r8NuFcU0/exec', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: "fetchSKUName", skuNo })
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-
+      google.script.run.withSuccessHandler(function(result) {
         if (result.success) {
           document.getElementById("skuName").value = result.skuName;
         } else {
           alert("Error: " + result.message);
           document.getElementById("skuName").value = "";
         }
-      } catch (err) {
-        alert("Error connecting to the server: " + err.message);
-        console.error(err);
-        document.getElementById("skuName").value = "";
-      }
+      }).fetchSKUName(skuNo);
     });
 
-    // Submit form data to Borrowed Items Apps Script
-    async function submitForm() {
+    // Submit form data to issue an item
+    function submitForm() {
       const skuNo = document.getElementById("skuNo").value;
       const skuName = document.getElementById("skuName").value || "N/A";
       const quantity = document.getElementById("quantity").value;
@@ -100,7 +79,6 @@
       }
 
       const data = {
-        action: "issueItem", // Action for Borrowed Items Apps Script
         skuNo,
         skuName,
         quantity: parseInt(quantity, 10),
@@ -109,43 +87,21 @@
         remarks
       };
 
-      try {
-        // Submit the data to Borrowed Items Apps Script
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzEyPfUCNVV5MaOb6Asp87CL4OOztV1iug0p08dKbQuo5nKjeqYYV5nwmrabsaDb5Gvgw/exec', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
+      google.script.run.withSuccessHandler(function(result) {
         if (result.success) {
-          alert("Item issued successfully!");
+          alert(result.message);
+          // Reset form fields
+          document.getElementById("skuNo").value = "";
+          document.getElementById("skuName").value = "";
+          document.getElementById("quantity").value = "";
+          document.getElementById("studentName").value = "";
+          document.getElementById("mobileNo").value = "";
+          document.getElementById("remarks").value = "";
         } else {
           alert("Error: " + result.message);
         }
-      } catch (err) {
-        alert("Error connecting to the server: " + err.message);
-        console.error(err);
-      }
-
-      // Reset form fields
-      document.getElementById("skuNo").value = "";
-      document.getElementById("skuName").value = "";
-      document.getElementById("quantity").value = "";
-      document.getElementById("studentName").value = "";
-      document.getElementById("mobileNo").value = "";
-      document.getElementById("remarks").value = "";
-    }
-
-    // Add Another Item functionality (optional)
-    function addAnother() {
-      alert("Add Another functionality is not implemented yet.");
+      }).issueItem(data);
     }
   </script>
-
 </body>
 </html>
