@@ -1,0 +1,100 @@
+/* Body styling (No change) */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(to right, #f5f7fa, #c3cfe2);
+}
+
+/* Container styling (No change) */
+.container {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+}
+
+/* Form group styling (No change) */
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Button styling (No change) */
+.form-group button {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.form-group button:hover {
+  background: #0056b3;
+}
+
+/* Return button styling (No change) */
+.return-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff7f50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.return-btn:hover {
+  background: #ff4500;
+}
+
+/* Dynamic Items List Styling */
+.borrowed-items {
+  margin-top: 20px;
+}
+.borrowed-items .item {
+  padding: 10px;
+  margin-bottom: 10px;
+  background: rgba(0, 123, 255, 0.1);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+}
+.borrowed-items .item span {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+.borrowed-items .item input {
+  margin-top: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+/* Empty State Message */
+.borrowed-items p {
+  color: #555;
+  font-size: 1rem;
+  text-align: center;
+}
+
