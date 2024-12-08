@@ -57,36 +57,39 @@
   <script>
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
 
-    function handleLogin(event) {
-      event.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
+    // Inside your handleLogin function
+function handleLogin(event) {
+  event.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
 
-      fetch('https://script.google.com/macros/s/your-script-id/exec', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'login',
-          username,
-          password
-        })
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Upon successful login, redirect to the issue items page
-            window.location.href = 'index.html';
-          } else {
-            alert('Invalid username or password');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('An error occurred during login');
-        });
-    }
-  </script>
+  fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      action: 'login',
+      username,
+      password
+    })
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Set a flag in localStorage to indicate the user is logged in
+        localStorage.setItem('loggedIn', 'true');
+        // Redirect to the renamed issue page
+        window.location.href = 'issue.html';
+      } else {
+        alert('Invalid username or password');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred during login');
+    });
+}
+</script>
 </body>
 </html>
