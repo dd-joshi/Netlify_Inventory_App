@@ -1,107 +1,60 @@
-<!-- index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
-  <title>Issue Items</title>
-  <!-- Include your CSS and any other resources here -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SKU Lookup</title>
 </head>
 <body>
-  <div class="container">
-    <button class="return-btn" onclick="window.location.href='return.html'">Go to Return Page</button>
-    <h2>Issue Items</h2>
-    
-    <!-- Form Fields -->
-    <div class="form-group">
-      <label for="skuNo">SKU No:</label>
-      <input type="text" id="skuNo" placeholder="Scan or Enter SKU No." required>
-    </div>
-    <div class="form-group">
-      <label for="skuName">SKU Name:</label>
-      <input type="text" id="skuName" placeholder="Auto-filled" readonly>
-    </div>
-    <div class="form-group">
-      <label for="quantity">Quantity:</label>
-      <input type="number" id="quantity" placeholder="Enter quantity" required>
-      <!-- Implement addAnother() function if needed -->
-    </div>
-    <div class="form-group">
-      <label for="studentName">Student Name:</label>
-      <input type="text" id="studentName" placeholder="Enter student name" required>
-    </div>
-    <div class="form-group">
-      <label for="mobileNo">Mobile No:</label>
-      <input type="text" id="mobileNo" placeholder="Enter mobile number" required>
-    </div>
-    <div class="form-group">
-      <label for="remarks">Remarks:</label>
-      <input type="text" id="remarks" placeholder="Enter remarks (optional)">
-    </div>
-    <div class="form-group">
-      <button id="submitBtn" onclick="submitForm()">Submit</button>
-    </div>
-  </div>
+  <h2>SKU Lookup</h2>
 
-  <!-- Include any additional HTML elements -->
+  <form id="skuForm">
+    <label for="skuNo">Enter SKU No.:</label>
+    <input type="text" id="skuNo" name="skuNo" required>
+    <button type="submit">Search</button>
+  </form>
+
+  <div id="skuDetails"></div>
 
   <script>
-    // Fetch SKU Name when SKU No. is entered
-    document.getElementById("skuNo").addEventListener("change", function() {
-      const skuNo = this.value;
+    // Handle form submission
+    document.getElementById('skuForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const skuNo = document.getElementById('skuNo').value;
 
       if (!skuNo) {
-        document.getElementById("skuName").value = "";
+        alert("Please enter a SKU No.");
         return;
       }
 
-      google.script.run.withSuccessHandler(function(result) {
-        if (result.success) {
-          document.getElementById("skuName").value = result.skuName;
-        } else {
-          alert("Error: " + result.message);
-          document.getElementById("skuName").value = "";
-        }
-      }).fetchSKUName(skuNo);
+      const response = await fetch('YOUR_WEB_APP_URL', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: "fetchSKUDetails",
+          skuNo: skuNo
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        document.getElementById('skuDetails').innerHTML = `
+          <h3>SKU Found:</h3>
+          <p><strong>SKU No:</strong> ${data.skuNo}</p>
+          <p><strong>SKU Name:</strong> ${data.skuName}</p>
+          <p><strong>Total Qty:</strong> ${data.totalQty}</p>
+        `;
+      } else {
+        document.getElementById('skuDetails').innerHTML = `
+          <h3>Error:</h3>
+          <p>${data.message}</p>
+        `;
+      }
     });
-
-    // Submit form data to issue an item
-    function submitForm() {
-      const skuNo = document.getElementById("skuNo").value;
-      const skuName = document.getElementById("skuName").value || "N/A";
-      const quantity = document.getElementById("quantity").value;
-      const studentName = document.getElementById("studentName").value;
-      const mobileNo = document.getElementById("mobileNo").value;
-      const remarks = document.getElementById("remarks").value || "N/A";
-
-      if (!skuNo || !quantity || !studentName || !mobileNo) {
-        alert("Please fill in all required fields.");
-        return;
-      }
-
-      const data = {
-        skuNo,
-        skuName,
-        quantity: parseInt(quantity, 10),
-        studentName,
-        mobileNo,
-        remarks
-      };
-
-      google.script.run.withSuccessHandler(function(result) {
-        if (result.success) {
-          alert(result.message);
-          // Reset form fields
-          document.getElementById("skuNo").value = "";
-          document.getElementById("skuName").value = "";
-          document.getElementById("quantity").value = "";
-          document.getElementById("studentName").value = "";
-          document.getElementById("mobileNo").value = "";
-          document.getElementById("remarks").value = "";
-        } else {
-          alert("Error: " + result.message);
-        }
-      }).issueItem(data);
-    }
   </script>
 </body>
 </html>
