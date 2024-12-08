@@ -1,141 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Return Items</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Inline CSS for simplicity */
+    /* Similar styling as index.html */
+  </style>
 </head>
 <body>
   <div class="container">
     <h2>Return Items</h2>
-    
-    <!-- Input Fields -->
-    <div class="form-group">
-      <label for="mobileNo">Enter Mobile No:</label>
-      <input type="text" id="mobileNo" placeholder="Enter mobile number" required>
-    </div>
-    <div class="form-group">
-      <button id="searchBtn" onclick="searchItems()">Search Items</button>
-    </div>
+    <form id="searchForm">
+      <div class="form-group">
+        <label for="mobileNo">Mobile No. (10-digit):</label>
+        <input type="text" id="mobileNo" required pattern="\d{10}">
+      </div>
+      <button type="button" onclick="fetchBorrowedItems()">Search</button>
+    </form>
 
-    <!-- Borrowed Items List -->
-    <div class="borrowed-items" id="borrowedItemsList">
-      <!-- Items will be dynamically populated here -->
-    </div>
-
-    <!-- Submit Return Button -->
-    <div class="form-group">
-      <button class="submit-btn" id="submitReturnBtn" onclick="submitReturn()">Submit Return</button>
+    <div class="item-list" id="itemList" style="display:none;">
+      <h3>Borrowed Items</h3>
+      <form id="itemsForm">
+        <table>
+          <thead>
+            <tr>
+              <th>Select</th>
+              <th>Date</th>
+              <th>Tool No.</th>
+              <th>Tool Name</th>
+              <th>Quantity</th>
+            </tr>
+          </thead>
+          <tbody id="itemTableBody">
+            <!-- Items will be added here -->
+          </tbody>
+        </table>
+        <button type="button" onclick="submitReturn()">Return Selected Items</button>
+      </form>
     </div>
   </div>
 
   <script>
-    async function searchItems() {
-      const mobileNo = document.getElementById("mobileNo").value;
+    let borrowedItems = [];
 
+    function fetchBorrowedItems() {
+      const mobileNo = document.getElementById('mobileNo').value.trim();
       if (!mobileNo) {
-        alert("Please enter a mobile number.");
+        alert('Please enter a Mobile No.');
         return;
       }
 
-      const data = {
-        action: "searchItems", // Action for Apps Script
-        mobileNo
-      };
-
-      try {
-        // Replace 'YOUR_WEB_APP_URL' with your Apps Script Web App URL
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzEyPfUCNVV5MaOb6Asp87CL4OOztV1iug0p08dKbQuo5nKjeqYYV5nwmrabsaDb5Gvgw/exec', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+      fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'getBorrowedItems',
+          mobileNo
+        })
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.success && result.items.length > 0) {
+            borrowedItems = result.items;
+            populateItemList(borrowedItems);
+          } else {
+            alert('No borrowed items found for this Mobile No.');
+            document.getElementById('itemList').style.display = 'none';
+          }
         });
-
-        const result = await response.json();
-
-        if (result.success) {
-          populateItems(result.items);
-        } else {
-          alert("Error: " + result.message);
-        }
-      } catch (err) {
-        alert("Error connecting to the server: " + err.message);
-      }
     }
 
-    function populateItems(items) {
-      const itemsList = document.getElementById("borrowedItemsList");
-      itemsList.innerHTML = ""; // Clear existing items
-
-      if (items.length === 0) {
-        itemsList.innerHTML = "<p>No items found for this mobile number.</p>";
-        return;
-      }
-
-      items.forEach(item => {
-        const itemDiv = document.createElement("div");
-        itemDiv.className = "item";
-        itemDiv.innerHTML = `
-          <span>SKU No: ${item.skuNo}</span><br>
-          <span>Item Name: ${item.skuName}</span><br>
-          <span>Issued Qty: ${item.issuedQty}</span><br>
-          <span>Remarks: ${item.remarks || "N/A"}</span><br>
-          <label for="returnQty-${item.skuNo}">Return Qty:</label>
-          <input type="number" id="returnQty-${item.skuNo}" placeholder="Enter return qty" min="1" max="${item.issuedQty}">
+    function populateItemList(items) {
+      const tbody = document.getElementById('itemTableBody');
+      tbody.innerHTML = '';
+      items.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="checkbox" name="selectedItems" value="${index}"></td>
+          <td>${item.date}</td>
+          <td>${item.toolNo}</td>
+          <td>${item.toolName}</td>
+          <td>${item.qty}</td>
         `;
-        itemsList.appendChild(itemDiv);
+        tbody.appendChild(row);
       });
+      document.getElementById('itemList').style.display = 'block';
     }
 
-    async function submitReturn() {
-      const mobileNo = document.getElementById("mobileNo").value;
-
-      if (!mobileNo) {
-        alert("Please enter a mobile number.");
+    function submitReturn() {
+      const checkboxes = document.querySelectorAll('input[name="selectedItems"]:checked');
+      if (checkboxes.length === 0) {
+        alert('Please select at least one item to return.');
         return;
       }
 
-      const items = [];
-      document.querySelectorAll("[id^='returnQty-']").forEach(input => {
-        const skuNo = input.id.replace("returnQty-", "");
-        const returnQty = parseInt(input.value, 10);
+      const selectedIndexes = Array.from(checkboxes).map(cb => parseInt(cb.value));
+      const itemsToReturn = selectedIndexes.map(index => borrowedItems[index]);
 
-        if (returnQty) {
-          items.push({ skuNo, returnQty });
-        }
-      });
-
-      if (items.length === 0) {
-        alert("Please enter return quantities for at least one item.");
-        return;
-      }
-
-      const data = {
-        action: "processReturn", // Action for Apps Script
-        mobileNo,
-        items
-      };
-
-      try {
-        // Replace 'YOUR_WEB_APP_URL' with your Apps Script Web App URL
-        const response = await fetch('YOUR_WEB_APP_URL', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+      fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'returnItems',
+          data: { items: itemsToReturn }
+        })
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            alert('Items returned successfully.');
+            // Refresh the item list
+            fetchBorrowedItems();
+          } else {
+            alert('Error returning items: ' + result.message);
+          }
         });
-
-        const result = await response.json();
-
-        if (result.success) {
-          alert("Return processed successfully!");
-          document.getElementById("borrowedItemsList").innerHTML = ""; // Clear the list after successful return
-        } else {
-          alert("Error: " + result.message);
-        }
-      } catch (err) {
-        alert("Error connecting to the server: " + err.message);
-      }
     }
   </script>
 </body>
