@@ -71,6 +71,12 @@
   </style>
 </head>
 <body>
+<script>
+// Redirect to login page if not logged in
+if (localStorage.getItem('loggedIn') !== 'true') {
+  window.location.href = 'index.html';
+}
+</script>
   <div class="container">
     <h2>Issue Items</h2>
     <form id="issueForm">
@@ -139,25 +145,29 @@
     document.getElementById('date').value = new Date().toISOString().split('T')[0];
     let items = [];
 
-    document.getElementById('toolNo').addEventListener('blur', function() {
-      const toolNo = this.value.trim();
-      if (toolNo.length === 5) {
-        fetch(`https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec?action=getToolDetails&toolNo=${toolNo}`)
-          .then(response => response.json())
-          .then(result => {
-            if (result.found) {
-              document.getElementById('toolName').value = result.toolName;
-              document.getElementById('toolError').textContent = '';
-            } else {
-              document.getElementById('toolName').value = '';
-              document.getElementById('toolError').textContent = 'Invalid Tool No.';
-            }
-          });
-      } else {
-        document.getElementById('toolName').value = '';
-        document.getElementById('toolError').textContent = 'Tool No. must be 5 characters.';
-      }
-    });
+document.getElementById('toolNo').addEventListener('blur', function() {
+  const toolNo = this.value.trim();
+  if (toolNo.length === 5) {
+    fetch(`https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec?action=getToolDetails&toolNo=${encodeURIComponent(toolNo)}`)
+      .then(response => response.json())
+      .then(result => {
+        if (result.success && result.found) {
+          document.getElementById('toolName').value = result.toolName;
+          document.getElementById('toolError').textContent = '';
+        } else {
+          document.getElementById('toolName').value = '';
+          document.getElementById('toolError').textContent = result.message || 'Invalid Tool No.';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching tool details:', error);
+        document.getElementById('toolError').textContent = 'Error fetching tool details';
+      });
+  } else {
+    document.getElementById('toolName').value = '';
+    document.getElementById('toolError').textContent = 'Tool No. must be 5 characters.';
+  }
+});
 
     function addAnother() {
       const toolNo = document.getElementById('toolNo').value.trim();
