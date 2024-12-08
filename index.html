@@ -1,58 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
-</head>
-<body>
-  <h1>Login Page</h1>
-  <form id="loginForm">
-    <label for="username">Username:</label>
-    <input type="text" id="username" required><br>
-    <label for="password">Password:</label>
-    <input type="password" id="password" required><br>
-    <button type="submit">Login</button>
-  </form>
-
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-      e.preventDefault(); // Prevent form from refreshing the page
-      console.log('Login button clicked'); // Debugging: Check if the button works
-
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-
-      console.log('Username:', username, 'Password:', password); // Debugging: Check input values
-
-      fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'login',
-          username: username,
-          password: password,
-        }),
-      })
-        .then((response) => {
-          console.log('Response received:', response); // Debugging: Log the response
-          return response.json();
-        })
-        .then((data) => {
-          console.log('Data received:', data); // Debugging: Log the data
-          if (data.success) {
-            alert(data.message); // Success message
-            // Redirect or perform further actions
-          } else {
-            alert(data.message); // Failure message
-          }
-        })
-        .catch((error) => {
-          console.error('Error occurred:', error); // Log any errors
-        });
-    });
-  </script>
-</body>
-</html>
+fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    action: 'login',
+    username: username,
+    password: password,
+  }),
+})
+  .then((response) => {
+    console.log('Response received:', response); // Debug line
+    return response.json();
+  })
+  .then((data) => {
+    console.log('Data received:', data); // Debug line
+    if (data.success) {
+      alert(data.message);
+    } else {
+      alert(data.message);
+    }
+  })
+  .catch((error) => {
+    console.error('Fetch error:', error); // Debug line
+  });
