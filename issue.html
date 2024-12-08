@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Issue Items</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Inline CSS for simplicity */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0ebe1;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      color: #4a4a4a;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      color: #4a4a4a;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 15px;
+      margin-top: 10px;
+      background: #b08968;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #9c6f56;
+    }
+    .item-list {
+      margin-top: 20px;
+    }
+    .item-list table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .item-list th, .item-list td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    .item-list th {
+      background-color: #eee;
+    }
+    .remove-btn {
+      color: red;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<script>
+// Redirect to login page if not logged in
+if (localStorage.getItem('loggedIn') !== 'true') {
+  window.location.href = 'index.html';
+}
+</script>
+  <div class="container">
+    <h2>Issue Items</h2>
+    <form id="issueForm">
+      <div class="form-group">
+        <label for="date">Date:</label>
+        <input type="text" id="date" readonly>
+      </div>
+      <div class="form-group">
+        <label for="toolNo">Tool No. (5-digit alphanumeric):</label>
+        <input type="text" id="toolNo" required maxlength="5" pattern="[A-Za-z0-9]{5}">
+        <div id="toolError" class="error"></div>
+      </div>
+      <div class="form-group">
+        <label for="toolName">Tool Name:</label>
+        <input type="text" id="toolName" readonly>
+      </div>
+      <div class="form-group">
+        <label for="qty">Quantity (Default 1):</label>
+        <input type="number" id="qty" value="1" min="1" required>
+        <div id="qtyError" class="error"></div>
+      </div>
+      <button type="button" onclick="addAnother()">Add Another</button>
+
+      <!-- User Details -->
+      <div class="form-group">
+        <label for="name">Name (Mandatory):</label>
+        <input type="text" id="name" required pattern="[A-Za-z\s]+">
+      </div>
+      <div class="form-group">
+        <label for="mobileNo">Mobile No. (10-digit, Mandatory):</label>
+        <input type="text" id="mobileNo" required pattern="\d{10}">
+      </div>
+      <div class="form-group">
+        <label for="enrollmentNo">Enrollment No. (Optional, Max 20 digits):</label>
+        <input type="text" id="enrollmentNo" maxlength="20">
+      </div>
+      <div class="form-group">
+        <label for="remarks">Remarks (Optional, Max 50 characters):</label>
+        <input type="text" id="remarks" maxlength="50">
+      </div>
+
+      <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+
+    <!-- Item List for Review -->
+    <div class="item-list" id="itemList" style="display:none;">
+      <h3>Review Items</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Tool No.</th>
+            <th>Tool Name</th>
+            <th>Quantity</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="itemTableBody">
+          <!-- Items will be added here -->
+        </tbody>
+      </table>
+      <button type="button" onclick="finalSubmit()">Ok</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    let items = [];
+
+document.getElementById('toolNo').addEventListener('blur', function() {
+  const toolNo = this.value.trim();
+  if (toolNo.length === 5) {
+    fetch(`https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec?action=getToolDetails&toolNo=${encodeURIComponent(toolNo)}`)
+      .then(response => response.json())
+      .then(result => {
+        if (result.success && result.found) {
+          document.getElementById('toolName').value = result.toolName;
+          document.getElementById('toolError').textContent = '';
+        } else {
+          document.getElementById('toolName').value = '';
+          document.getElementById('toolError').textContent = result.message || 'Invalid Tool No.';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching tool details:', error);
+        document.getElementById('toolError').textContent = 'Error fetching tool details';
+      });
+  } else {
+    document.getElementById('toolName').value = '';
+    document.getElementById('toolError').textContent = 'Tool No. must be 5 characters.';
+  }
+});
+
+    function addAnother() {
+      const toolNo = document.getElementById('toolNo').value.trim();
+      const toolName = document.getElementById('toolName').value.trim();
+      const qty = parseInt(document.getElementById('qty').value);
+
+      if (!toolNo || !toolName) {
+        alert('Please enter a valid Tool No. and ensure Tool Name is filled.');
+        return;
+      }
+
+      if (qty <= 0) {
+        alert('Quantity must be at least 1.');
+        return;
+      }
+
+      // Validate quantity via backend
+      fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'validateQuantity',
+          toolNo,
+          qty
+        })
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.valid) {
+            items.push({ toolNo, toolName, qty });
+            clearItemFields();
+            updateItemList();
+            document.getElementById('qtyError').textContent = '';
+          } else {
+            document.getElementById('qtyError').textContent = result.message;
+          }
+        });
+    }
+
+    function clearItemFields() {
+      document.getElementById('toolNo').value = '';
+      document.getElementById('toolName').value = '';
+      document.getElementById('qty').value = '1';
+      document.getElementById('toolError').textContent = '';
+      document.getElementById('qtyError').textContent = '';
+    }
+
+    function updateItemList() {
+      const tbody = document.getElementById('itemTableBody');
+      tbody.innerHTML = '';
+      items.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.toolNo}</td>
+          <td>${item.toolName}</td>
+          <td>${item.qty}</td>
+          <td><span class="remove-btn" onclick="removeItem(${index})">✖</span></td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      document.getElementById('itemList').style.display = items.length > 0 ? 'block' : 'none';
+    }
+
+    function removeItem(index) {
+      items.splice(index, 1);
+      updateItemList();
+    }
+
+    function submitForm() {
+      const name = document.getElementById('name').value.trim();
+      const mobileNo = document.getElementById('mobileNo').value.trim();
+
+      if (items.length === 0) {
+        alert('Please add at least one item.');
+        return;
+      }
+
+      if (!name || !mobileNo) {
+        alert('Please fill in Name and Mobile No.');
+        return;
+      }
+
+      // Display items for verification
+      updateItemList();
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function finalSubmit() {
+      const data = {
+        date: document.getElementById('date').value,
+        name: document.getElementById('name').value.trim(),
+        mobileNo: document.getElementById('mobileNo').value.trim(),
+        enrollmentNo: document.getElementById('enrollmentNo').value.trim(),
+        remarks: document.getElementById('remarks').value.trim(),
+        items: items
+      };
+
+      fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'issueItems',
+          data: data
+        })
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            alert('Items issued successfully.');
+            // Reset form and items
+            document.getElementById('issueForm').reset();
+            items = [];
+            updateItemList();
+          } else {
+            alert('Error issuing items: ' + result.message);
+          }
+        });
+    }
+  </script>
+</body>
+</html>

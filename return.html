@@ -9,6 +9,26 @@
   </style>
 </head>
 <body>
+
+<script>
+// Redirect to login page if not logged in
+if (localStorage.getItem('loggedIn') !== 'true') {
+  window.location.href = 'index.html';
+}
+</script>
+
+<!-- Place this where you want the logout button to appear -->
+<button onclick="logout()">Logout</button>
+
+<script>
+function logout() {
+  // Clear the login flag
+  localStorage.removeItem('loggedIn');
+  // Redirect to login page
+  window.location.href = 'index.html';
+}
+</script>
+
   <div class="container">
     <h2>Return Items</h2>
     <form id="searchForm">
