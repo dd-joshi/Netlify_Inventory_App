@@ -17,10 +17,13 @@
 
   <script>
     document.getElementById('loginForm').addEventListener('submit', function (e) {
-      e.preventDefault();
+      e.preventDefault(); // Prevent form from refreshing the page
+      console.log('Login button clicked'); // Debugging: Check if the button works
 
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
+
+      console.log('Username:', username, 'Password:', password); // Debugging: Check input values
 
       fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
         method: 'POST',
@@ -33,16 +36,22 @@
           password: password,
         }),
       })
-        .then((response) => response.json())
+        .then((response) => {
+          console.log('Response received:', response); // Debugging: Log the response
+          return response.json();
+        })
         .then((data) => {
+          console.log('Data received:', data); // Debugging: Log the data
           if (data.success) {
-            alert(data.message);
-            // Redirect or perform other actions on success
+            alert(data.message); // Success message
+            // Redirect or perform further actions
           } else {
-            alert(data.message);
+            alert(data.message); // Failure message
           }
         })
-        .catch((error) => console.error('Error:', error));
+        .catch((error) => {
+          console.error('Error occurred:', error); // Log any errors
+        });
     });
   </script>
 </body>
