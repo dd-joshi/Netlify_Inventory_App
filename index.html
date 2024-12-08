@@ -1,96 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    /* Inline CSS for simplicity */
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0ebe1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+fetch('https://your-api-endpoint/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ username: 'test', password: 'test' })
+})
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log('Login successful');
+    } else {
+      console.error('Login failed');
     }
-    .login-container {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(5px);
-      padding: 20px;
-      border-radius: 10px;
-      width: 300px;
-    }
-    .login-container h2 {
-      text-align: center;
-      color: #4a4a4a;
-    }
-    .login-container input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 5px;
-    }
-    .login-container button {
-      width: 100%;
-      padding: 10px;
-      background: #b08968;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      font-size: 16px;
-    }
-    .login-container button:hover {
-      background: #9c6f56;
-    }
-  </style>
-</head>
-<body>
-  <div class="login-container">
-    <h2>Tool Management Login</h2>
-    <form id="loginForm">
-      <input type="text" id="username" placeholder="Username" required>
-      <input type="password" id="password" placeholder="Password" required>
-      <button type="submit">Login</button>
-    </form>
-  </div>
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-
-    function handleLogin(event) {
-      event.preventDefault();
-
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      // Using the provided deployment ID in the Web App URL
-      fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'login',
-          username,
-          password
-        })
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Set login flag in localStorage
-            localStorage.setItem('loggedIn', 'true');
-            // Redirect to the issue page
-            window.location.href = 'issue.html';
-          } else {
-            alert(data.message || 'Invalid username or password');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('An error occurred during login');
-        });
-    }
-  </script>
-</body>
-</html>
+  })
+  .catch(error => console.error('Error:', error));
