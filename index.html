@@ -1,14 +1,49 @@
-fetch('https://your-api-endpoint/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ username: 'test', password: 'test' })
-})
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      console.log('Login successful');
-    } else {
-      console.error('Login failed');
-    }
-  })
-  .catch(error => console.error('Error:', error));
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+</head>
+<body>
+  <h1>Login Page</h1>
+  <form id="loginForm">
+    <label for="username">Username:</label>
+    <input type="text" id="username" required><br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" required><br>
+    <button type="submit">Login</button>
+  </form>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      fetch('https://script.google.com/macros/s/AKfycbzqI4H6NuqyflNtX-JC2bWAFOjL75btRa_eW7NEUpjnZ7JeBgXsT_qZ7y6YhBJZT-hE/exec', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'login',
+          username: username,
+          password: password,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            alert(data.message);
+            // Redirect or perform other actions on success
+          } else {
+            alert(data.message);
+          }
+        })
+        .catch((error) => console.error('Error:', error));
+    });
+  </script>
+</body>
+</html>
